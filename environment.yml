@@ -1,0 +1,9 @@
+name: dequa-bot
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.9.2
+  - python-dotenv=0.15.0
+  - python-telegram-bot=13.2
+  - urllib3=1.26.3
