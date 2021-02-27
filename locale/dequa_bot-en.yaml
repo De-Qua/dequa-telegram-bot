@@ -1,0 +1,20 @@
+Ciao!: "Hi!"
+
+settings: >
+  Ehy! Here you can play with the settings!
+
+  Not much to select for now, but you can choose your language!
+
+search address: >
+  Write me an address in Venice and I will give you the location!
+
+  Or type /cancel if you don't want to search an address anymore.
+
+help: >
+  Search an address in venice, e.g. "/address San Marco 1"
+
+  If you want to change the settings just type /settings
+
+current language: "The current language is {}. Choose your language!"
+
+language updated: "The language is now {}"

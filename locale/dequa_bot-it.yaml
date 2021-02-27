@@ -1,0 +1,34 @@
+Ciao!: "Ciao!"
+
+Address not found :(: "Indirizzo non trovato :("
+
+Open on DeQua: "Apri su DeQua"
+
+settings: >
+  Ehy! Qua puoi giocare con le impostazioni
+
+  Per ora non c'è molto, ma almeno puoi scegliere la lingua!
+
+search address: >
+  Scrivi un indirizzo a Venezia e io cercherò la sua posizione!
+
+  Se hai cambiato idea clicca su /cancel.
+
+help: >
+  Cerca un indirizzo a venezia, per esempio "/address San Marco 1"
+  
+  Se invece vuoi cambiare le impostazioni scrivi /settings
+
+Done!: "Finito!"
+
+New settings are saved! Bye!: "Impostazioni salvate! Ciao!"
+
+current language: "La lingua attuale è {}. Scegli una nuova lingua"
+
+not set: "non ancora selezionata"
+
+« Back to settings: "« Torna alle impostazioni"
+
+language updated: "La nuova lingua è {}"
+
+No problem, bye!: "Nessun problema, ciao!"

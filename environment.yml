@@ -4,6 +4,8 @@ channels:
   - defaults
 dependencies:
   - python=3.9.2
+  - ipdb=0.13.4
   - python-dotenv=0.15.0
   - python-telegram-bot=13.2
+  - pyyaml=5.4.1
   - urllib3=1.26.3
