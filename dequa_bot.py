@@ -124,7 +124,8 @@ def get_lang(context: CallbackContext) -> str:
 
 def start(update: Update, context: CallbackContext) -> None:
     """Send a message when the command /start is issued."""
-    set_chat_language(update, context)
+    if not 'lang' in context.chat_data.keys():
+        set_chat_language(update, context)
     lang = get_lang(context)
     update.message.reply_text(_('Ciao!', lang))
 
