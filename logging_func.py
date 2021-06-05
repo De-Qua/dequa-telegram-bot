@@ -1,6 +1,5 @@
 import logging
 from logging.handlers import RotatingFileHandler
-import colorlog
 import os
 
 
@@ -14,11 +13,11 @@ def set_up_logging(loglevel=logging.DEBUG, saveLogFiles=True, saveLogFolder='log
     :param backupCount: maximum number of log files
     :return: the logger object
     """
-    logger = colorlog.getLogger('dequa_bot')
+    logger = logging.getLogger('dequa_bot')
     logger.handlers.clear()
     logger.setLevel(loglevel)
-    ch = colorlog.StreamHandler()
-    formatter = colorlog.ColoredFormatter('[%(asctime)s] [%(name)s:%(filename)s:%(lineno)d] %(log_color)s[%(levelname)s]%(reset)s %(message)s')
+    ch = logging.StreamHandler()
+    formatter = logging.Formatter('[%(asctime)s] [%(name)s:%(filename)s:%(lineno)d] [%(levelname)s] %(message)s')
     ch.setFormatter(formatter)
     logger.addHandler(ch)
     if saveLogFiles:
