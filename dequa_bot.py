@@ -8,7 +8,7 @@ Press Ctrl-C on the command line or send a signal to the process to stop the
 bot.
 """
 import logging
-from uuid import uuid4
+# from uuid import uuid4
 import requests
 import json
 import ipdb
@@ -17,11 +17,15 @@ import os
 import yaml
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from telegram import InlineQueryResultArticle, ParseMode, InputTextMessageContent, Update
-from telegram.ext import Updater, InlineQueryHandler, CommandHandler, CallbackContext
+# from telegram import InlineQueryResultArticle, ParseMode, InputTextMessageContent
+from telegram import Update
+# from telegram.ext import InlineQueryHandler
+from telegram.ext import Updater, CommandHandler, CallbackContext
 from telegram.ext import ConversationHandler, MessageHandler, Filters, CallbackQueryHandler
 from telegram.ext import PicklePersistence
-from telegram.utils.helpers import escape_markdown
+# from telegram.utils.helpers import escape_markdown
+
+from logging_func import set_up_logging
 
 # Load environment variables
 load_dotenv()
@@ -41,6 +45,7 @@ SETTINGS_MENU, SETTINGS_LANGUAGE = range(2)
 SETTINGS_BASE, SETTINGS_END, LANGUAGE_MENU = range(3)
 LANGUAGE_IT = 'it'
 LANGUAGE_EN = 'en'
+DEFAULT_LANG = LANGUAGE_EN
 
 # Languages
 localedir = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'locale')
@@ -61,7 +66,6 @@ LOCALES = {
 for lang in LOCALES.keys():
     with open(os.path.join(localedir, LOCALES[lang]["file"])) as stream:
         LOCALES[lang]["text"] = yaml.load(stream, Loader=yaml.FullLoader)
-DEFAULT_LANG = str(LANGUAGE_EN)
 
 
 def translate(string, lang=DEFAULT_LANG):
@@ -88,11 +92,7 @@ _ = translate
 
 
 # Enable logging
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
-)
-
-logger = logging.getLogger(__name__)
+logger = set_up_logging(logging.DEBUG)
 
 
 # Make the bot persistent
@@ -124,16 +124,22 @@ def get_lang(context: CallbackContext) -> str:
 
 def start(update: Update, context: CallbackContext) -> None:
     """Send a message when the command /start is issued."""
-    if not 'lang' in context.chat_data.keys():
+    if 'lang' not in context.chat_data.keys():
         set_chat_language(update, context)
     lang = get_lang(context)
-    update.message.reply_text(_('Ciao!', lang))
+    update.message.reply_text(_('start', lang))
+    #logging
+    logger.debug(f'Chat {update.effective_chat.id} - Start')
+    return
 
 
 def help_command(update: Update, context: CallbackContext) -> None:
     """Send a message when the command /help is issued."""
     lang = get_lang(context)
     update.message.reply_text(_("help", lang))
+    #logging
+    logger.debug(f'Chat {update.effective_chat.id} - Help')
+    return
 
 
 def command_search_address(update: Update, context: CallbackContext) -> int:
@@ -142,29 +148,36 @@ def command_search_address(update: Update, context: CallbackContext) -> int:
     address2search = ' '.join(context.args)
     if not address2search.strip():
         update.message.reply_text(_("search address", lang))
+        logger.debug(f'Chat {update.effective_chat.id} - Address (no arguments)')
         return ADDRESS
     else:
+        logger.debug(f'Chat {update.effective_chat.id} - Address {address2search}')
         return search_address(update, context, address2search)
 
 
 def conversation_search_address(update: Update, context: CallbackContext) -> int:
     """Find an address after sending the command /address"""
     address2search = update.message.text
+    logger.debug(f'Chat {update.effective_chat.id} - {address2search}')
     return search_address(update, context, address2search)
 
 
 def search_address(update: Update, context: CallbackContext, address2search) -> int:
     """Find an address in venice."""
     lang = get_lang(context)
+
     r = requests.get(API_ADDRESS, headers=HEAD, data={"address": address2search})
     if r.status_code != 200:
+        logger.debug(f'Chat {update.effective_chat.id} - Address NOT found')
         update.message.reply_text(_("Address not found :(", lang))
         return ConversationHandler.END
     response = json.loads(r.text)
     if response['ResponseCode'] != 0:
+        logger.debug(f'Chat {update.effective_chat.id} - Address NOT found')
         update.message.reply_text(_("Address not found :(", lang))
         return ConversationHandler.END
     else:
+        logger.debug(f'Chat {update.effective_chat.id} - Address found')
         url_button = [
             [InlineKeyboardButton(text=_("Open on DeQua", lang), url=f"{BASE_URL}?partenza={address2search}")]
         ]
@@ -179,6 +192,7 @@ def search_address(update: Update, context: CallbackContext, address2search) -> 
 
 def settings(update: Update, context: CallbackContext) -> int:
     """Settings view"""
+    logger.debug(f'Chat {update.effective_chat.id} - Settings')
     lang = get_lang(context)
     keyboard = [
         [
@@ -196,6 +210,7 @@ def settings(update: Update, context: CallbackContext) -> int:
 
 def settings_menu(update: Update, context: CallbackContext) -> int:
     """The same as settings but not as new message"""
+    logger.debug(f'Chat {update.effective_chat.id} - Settings Menu')
     lang = get_lang(context)
     query = update.callback_query
     query.answer()
@@ -215,6 +230,7 @@ def settings_menu(update: Update, context: CallbackContext) -> int:
 
 def settings_end(update: Update, context: CallbackContext) -> int:
     """Close the settings conversation"""
+    logger.debug(f'Chat {update.effective_chat.id} - Close settings')
     lang = get_lang(context)
     query = update.callback_query
     query.answer
@@ -224,6 +240,7 @@ def settings_end(update: Update, context: CallbackContext) -> int:
 
 def settings_language(update: Update, context: CallbackContext) -> int:
     """ Show language buttons """
+    logger.debug(f'Chat {update.effective_chat.id} - Settings language')
     lang = get_lang(context)
     # Get CallbackQuery from Update
     query = update.callback_query
@@ -253,6 +270,7 @@ def choose_language(update: Update, context: CallbackContext) -> int:
     # CallbackQueries need to be answered, even if no notification to the user is needed
     # Some clients may have trouble otherwise. See https://core.telegram.org/bots/api#callbackquery
     query.answer()
+    logger.debug(f'Chat {update.effective_chat.id} - Chosen language {query.data}')
     lang = LOCALES.get(query.data, DEFAULT_LANG)
 
     set_chat_language(update, context, lang['code'])
@@ -275,6 +293,7 @@ def choose_language(update: Update, context: CallbackContext) -> int:
 
 def cancel(update: Update, context: CallbackContext) -> int:
     """Abort the search of an address"""
+    logger.debug(f'Chat {update.effective_chat.id} - Cancel')
     lang = get_lang(context)
     update.message.reply_text(_("No problem, bye!", lang))
     return ConversationHandler.END
@@ -290,7 +309,7 @@ def main() -> None:
     # on different commands - answer in Telegram
     dispatcher.add_handler(CommandHandler("start", start))
     dispatcher.add_handler(CommandHandler("help", help_command))
-    #dispatcher.add_handler(CommandHandler("settings", settings))
+    # dispatcher.add_handler(CommandHandler("settings", settings))
     # dispatcher.add_handler(CommandHandler("address", start_search_address))
 
     address_handler = ConversationHandler(

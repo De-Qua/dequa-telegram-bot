@@ -1,4 +1,18 @@
-Ciao!: "Hi!"
+start: >
+  Hi, welcome on the telegram bot of DeQua!
+
+  Right now you can just search for an address in Venice, but more features will
+  arrive soon!
+
+  To search an address you can write /address followed by the address you are interested in,
+  or you can just select /address and write the address in the following message.
+
+  To change the language go to /settings and choose your language from the menu.
+  Right now only english and italian are supported.
+
+  If you want to have a fully working map of Venice, or you want to contact us,
+  just go to www.dequa.it
+
 
 settings: >
   Ehy! Here you can play with the settings!

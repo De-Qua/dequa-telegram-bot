@@ -1,4 +1,16 @@
-Ciao!: "Ciao!"
+start: >
+  Ciao, benvenuto sul bot di DeQua!
+
+  Per ora puoi solo cercare un indirizzo a Venezia, ma presto potrai anche
+  cercare percorsi e arriveranno tante nuove funzionalità!
+
+  Per cercare un indirizzo seleziona /address seguito dall'indirizzo che vuoi cercare,
+  oppure seleziona /address e scrivi l'indirizzo nel messaggio successivo.
+
+  Per cambiare lingua vai su /settings e naviga nel menu. Per ora oltre all'italiano
+  è supportato solo l'inglese.
+
+  Per qualsiasi funzione più avanzata e per contattarci vai su www.dequa.it
 
 Address not found :(: "Indirizzo non trovato :("
 
@@ -16,7 +28,7 @@ search address: >
 
 help: >
   Cerca un indirizzo a venezia, per esempio "/address San Marco 1"
-  
+
   Se invece vuoi cambiare le impostazioni scrivi /settings
 
 Done!: "Finito!"
