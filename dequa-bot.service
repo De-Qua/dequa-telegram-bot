@@ -1,0 +1,25 @@
+[Unit]
+# By default 'simple' is used, see also https://www.freedesktop.org/software/systemd/man/systemd.service.html#Type=
+# Type=simple|forking|oneshot|dbus|notify|idle
+Description=Dequa telegram bot
+## make sure we only start the service after network is up
+Wants=systemd-networkd-wait-online.service
+After=systemd-networkd-wait-online.service
+
+[Service]
+## here we can set custom environment variables
+# Environment=AUTOSSH_GATETIME=0
+# Environment=AUTOSSH_PORT=0
+WorkingDirectory=/home/pi/dequa/dequa-telegram-bot
+ExecStart=/home/pi/telegram/bin/python /home/pi/dequa/dequa-telegram-bot/dequa_bot.py
+ExecStop=pkill -9 dequa-bot
+# don't use 'nobody' if your script needs to access user files
+# (if User is not set the service will run as root)
+User=pi
+
+# Useful during debugging; remove it once the service is working
+StandardOutput=file:/home/pi/dequa/dequa-telegram-bot/logs/daemon_output.log
+StandardError=file:/home/pi/dequa/dequa-telegram-bot/logs/daemon_error.log
+
+[Install]
+WantedBy=multi-user.target
