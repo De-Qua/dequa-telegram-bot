@@ -8,7 +8,7 @@ Press Ctrl-C on the command line or send a signal to the process to stop the
 bot.
 """
 import logging
-# from uuid import uuid4
+from uuid import uuid4
 import requests
 import json
 import ipdb
@@ -17,11 +17,11 @@ import os
 import yaml
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-# from telegram import InlineQueryResultArticle, ParseMode, InputTextMessageContent
+from telegram import InlineQueryResultLocation, InlineQueryResultArticle, ParseMode, InputTextMessageContent
 from telegram import Update
 # from telegram.ext import InlineQueryHandler
 from telegram.ext import Updater, CommandHandler, CallbackContext
-from telegram.ext import ConversationHandler, MessageHandler, Filters, CallbackQueryHandler
+from telegram.ext import ConversationHandler, MessageHandler, Filters, CallbackQueryHandler, InlineQueryHandler
 from telegram.ext import PicklePersistence
 # from telegram.utils.helpers import escape_markdown
 
@@ -119,7 +119,10 @@ def get_lang(context: CallbackContext) -> str:
     """
     Get the current language
     """
-    return context.chat_data.get('lang', DEFAULT_LANG)
+    try:
+        return context.chat_data.get('lang', DEFAULT_LANG)
+    except AttributeError:
+        return DEFAULT_LANG
 
 
 def start(update: Update, context: CallbackContext) -> None:
@@ -299,6 +302,51 @@ def cancel(update: Update, context: CallbackContext) -> int:
     return ConversationHandler.END
 
 
+def inline_location(update: Update, context: CallbackContext) -> None:
+    """Search a location in inline mode"""
+    query = update.inline_query.query
+    if len(query) < 3:
+        return
+    # ipdb.set_trace()
+    lang = get_lang(context)
+
+    r = requests.get(API_ADDRESS, headers=HEAD, data={"address": query})
+    results = []
+    if r.status_code != 200:
+        logger.debug('Inline - Address NOT found')
+        results.append(InlineQueryResultArticle(
+                    id=str(uuid4()),
+                    title=_("Address not found :(", lang),
+                    input_message_content=InputTextMessageContent(title=f'{query}: {_("Address not found :(", lang)}')
+                ))
+    else:
+        response = json.loads(r.text)
+        if response['ResponseCode'] != 0:
+            logger.debug('Inline - Address NOT found')
+            results.append(InlineQueryResultArticle(
+                        id=str(uuid4()),
+                        title=_("Address not found :(", lang),
+                        input_message_content=InputTextMessageContent(title=f'{query}: {_("Address not found :(", lang)}')
+                    ))
+        else:
+            logger.debug('Inline - Address found')
+            data = response['ResponseData']
+            url_button = [
+                [InlineKeyboardButton(text=f'{data["address"]} - {_("Open on DeQua", lang)}', url=f"{BASE_URL}?partenza={query}")]
+            ]
+
+            reply_markup = InlineKeyboardMarkup(url_button)
+            results.append(InlineQueryResultLocation(
+                id=str(uuid4()),
+                title=data['address'],
+                latitude=data['latitude'],
+                longitude=data['longitude'],
+                reply_markup=reply_markup
+            ))
+
+    update.inline_query.answer(results)
+
+
 def main() -> None:
     # Create the Updater and pass it your bot's token.
     updater = Updater(TOKEN, persistence=my_persistence)
@@ -337,6 +385,8 @@ def main() -> None:
     )
     dispatcher.add_handler(settings_handler)
 
+    # inline
+    dispatcher.add_handler(InlineQueryHandler(inline_location))
     # on noncommand i.e message - echo the message on Telegram
     # dispatcher.add_handler(InlineQueryHandler(inlinequery))
 
